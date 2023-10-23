@@ -4,10 +4,7 @@ import { api } from "~/utils/api";
 import {SignIn, UserButton, useUser} from "@clerk/nextjs";
 
 export default function Home() {
-  const user = useUser();
-
-  const hello = api.post.hello.useQuery({ text: user.user?.fullName ?? "from tRPC" });
-
+  const {data} = api.posts.getAll.useQuery();
 
   return (
     <>
@@ -19,6 +16,15 @@ export default function Home() {
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         <SignIn />
         <UserButton />
+
+        <section>
+          {data?.map((post) => (
+            <div key={post.id}>
+              <p>{post.content}</p>
+              <p>{post.authorId}</p>
+            </div>
+          ))}
+        </section>
       </main>
     </>
   );
