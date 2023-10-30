@@ -1,15 +1,17 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {clerkClient} from "@clerk/nextjs";
+import type {User} from "@clerk/backend";
+import {TRPCError} from "@trpc/server";
 
+const filterUserforClient = (user: User) => (
+  {
+    id: user.id,
+    name: user.username,
+    profilePicture: user.imageUrl
+  });
 export const postsRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
 
   create: publicProcedure
     .input(z.object({ content: z.string().min(1), authorId: z.string().min(1) }))
@@ -33,7 +35,30 @@ export const postsRouter = createTRPCRouter({
   }),
 
   getAll: publicProcedure
-    .query(({ ctx }) => {
-    return ctx.db.post.findMany();
+    .query(async ({ ctx }) => {
+    const posts = await ctx.db.post.findMany({
+      take: 100,
+    });
+
+    const users = (await clerkClient.users.getUserList({
+      userId: posts.map((post) => post.authorId),
+      limit: 100,
+    })).map(filterUserforClient);
+
+    return posts.map((post) => {
+      const author = users.find((user) => user.id === post.authorId);
+
+      if (!author || !author.name) {
+        throw new TRPCError({code: 'INTERNAL_SERVER_ERROR', message: 'Author for post not found'});
+      }
+
+      return {
+        post,
+        author: {
+          ...author,
+          name: author.name
+        },
+      };
+    });
   }),
 });
