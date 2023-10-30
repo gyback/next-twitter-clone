@@ -60,10 +60,11 @@ const PostView = ({post, author}: PostWithUser) => {
 export default function Home() {
   const {data, isLoading} = api.posts.getAll.useQuery();
 
-  if (isLoading) return <div>Loading...</div>;
-
-  if (!data) return <div>Something went wrong...</div>;
-
+  const renderPosts = () => {
+    if (isLoading) return <div>Loading...</div>;
+    if (!data) return <div>Something went wrong...</div>;
+    return data.map((d) => PostView(d));
+  }
 
   return (
     <>
@@ -80,7 +81,7 @@ export default function Home() {
             <CreatePostWizard />
           </div>
           <section className="flex flex-col">
-            {data.map((d) => PostView(d))}
+            {renderPosts()}
           </section>
         </div>
       </main>
