@@ -62,7 +62,6 @@ const Feed = () => {
 
   if (postsLoading) return <LoadingPage />;
   if (!data) return <div>Something went wrong...</div>;
-  const renderPosts = () => {};
   return (
     <section className="flex flex-col">{data.map((p) => PostView(p))}</section>
   );
