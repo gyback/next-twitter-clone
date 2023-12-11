@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
 import { LoadingPage, LoadingSpinner } from "~/components/Loading.component";
+import { useState } from "react";
 
 dayjs.extend(relativeTime);
 
@@ -13,14 +14,50 @@ const CreatePostWizard = () => {
   const { user } = useUser();
 
   if (!user) return null;
+  const ctx = api.useUtils();
+  const [input, setInput] = useState("");
+
+  const { mutate: createPost, isLoading: isCreatingPost } =
+    api.posts.create.useMutation({
+      onSuccess: () => {
+        // Clear the input
+        setInput("");
+        // Invalidate the query
+        void ctx.posts.getAll.invalidate();
+      },
+    });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    createPost({ content: input });
+  };
 
   return (
-    <div className="flex w-full flex-col gap-3">
+    <form onSubmit={handleSubmit} className="flex w-full flex-row gap-3">
       <input
         placeholder="Chirp something"
-        className="border-none bg-transparent p-2 outline-0"
+        className="w-fill flex-grow border-none bg-transparent p-2 outline-0"
+        type="text"
+        name="content"
+        value={input}
+        onChange={handleChange}
+        required
+        disabled={isCreatingPost}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            createPost({ content: input });
+          }
+        }}
       />
-    </div>
+      <button type="submit" className="text-white" disabled={isCreatingPost}>
+        {isCreatingPost ? <LoadingSpinner /> : "Post"}
+      </button>
+    </form>
   );
 };
 
