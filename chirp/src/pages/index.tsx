@@ -7,14 +7,16 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
 import { LoadingPage, LoadingSpinner } from "~/components/Loading.component";
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { TRPCClientError } from "@trpc/client";
+import Link from "next/link";
 
 dayjs.extend(relativeTime);
 
 const CreatePostWizard = () => {
-  const { user } = useUser();
   const [input, setInput] = useState("");
 
-  if (!user) return null;
+  // if (!user) return null;
   const ctx = api.useUtils();
 
   const { mutate: createPost, isLoading: isCreatingPost } =
@@ -24,6 +26,20 @@ const CreatePostWizard = () => {
         setInput("");
         // Invalidate the query
         void ctx.posts.getAll.invalidate();
+      },
+      onError: (err) => {
+        const errorMessage = err.data?.zodError?.fieldErrors.content?.[0];
+        console.log("Error", err);
+        switch (true) {
+          case !!errorMessage:
+            toast.error(errorMessage as string);
+            break;
+          case err instanceof TRPCClientError:
+            toast.error(err.message);
+            break;
+          default:
+            toast.error("Failed to post. Please retry again later.");
+        }
       },
     });
 
@@ -50,6 +66,7 @@ const CreatePostWizard = () => {
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();
+            if (!input) return;
             createPost({ content: input });
           }
         }}
@@ -74,9 +91,16 @@ const PostView = ({ post, author }: PostWithUser) => {
       />
       <section className="flex flex-col gap-3 text-slate-300">
         <div className="flex flex-row gap-1.5">
-          <p>{`@${author.name}`}</p>
+          <Link href={`/@${author.name}`}>
+            <span>{`@${author.name}`}</span>
+          </Link>
 
-          <p className="font-thin">{`· ${dayjs(post.createdAt).fromNow()}`}</p>
+          <p className="font-thin">
+            {"· "}
+            <Link href={`/post/${post.id}`}>
+              {dayjs(post.createdAt).fromNow()}
+            </Link>
+          </p>
         </div>
         <p>{post.content}</p>
       </section>
