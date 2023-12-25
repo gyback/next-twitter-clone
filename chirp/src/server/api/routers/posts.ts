@@ -10,7 +10,7 @@ import { TRPCError } from "@trpc/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { filterUserForClient } from "~/utils/filterUserForClient";
-import { Post } from ".prisma/client";
+import { ChirpPost } from ".prisma/client";
 
 const rateLimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -18,7 +18,7 @@ const rateLimit = new Ratelimit({
   analytics: true,
 });
 
-const addUserData = async (posts: Post[]) => {
+const addUserData = async (posts: ChirpPost[]) => {
   const users = (
     await clerkClient.users.getUserList({
       userId: posts.map((post) => post.authorId),
@@ -48,13 +48,13 @@ const addUserData = async (posts: Post[]) => {
 
 export const postsRouter = createTRPCRouter({
   getLatest: publicProcedure.query(({ ctx }) => {
-    return ctx.db.post.findFirst({
+    return ctx.db.chirpPost.findFirst({
       orderBy: { createdAt: "desc" },
     });
   }),
 
   getAll: publicProcedure.query(async ({ ctx }) => {
-    const posts = await ctx.db.post.findMany({
+    const posts = await ctx.db.chirpPost.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
     });
@@ -65,7 +65,7 @@ export const postsRouter = createTRPCRouter({
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const post = await ctx.db.post.findFirst({
+      const post = await ctx.db.chirpPost.findFirst({
         where: {
           id: input.id,
         },
@@ -81,7 +81,7 @@ export const postsRouter = createTRPCRouter({
 
   getAllByUserId: publicProcedure.input(z.object({ userId: z.string() })).query(
     async ({ ctx, input }) =>
-      await ctx.db.post
+      await ctx.db.chirpPost
         .findMany({
           where: {
             authorId: input.userId,
@@ -106,7 +106,7 @@ export const postsRouter = createTRPCRouter({
           message: "Too many requests",
         });
       }
-      return ctx.db.post.create({
+      return ctx.db.chirpPost.create({
         data: {
           content: input.content,
           authorId: ctx.userId,
