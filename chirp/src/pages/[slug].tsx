@@ -7,6 +7,7 @@ import { db } from "~/server/db";
 import type { GetStaticProps, InferGetStaticPropsType, NextPage } from "next";
 import { clerkClient } from "@clerk/nextjs";
 import PageLayout from "~/components/PageLayout.component";
+import Image from "next/image";
 
 type PageProps = {
   username: string;
@@ -28,8 +29,19 @@ const ProfilePage: NextPage<PageProps> = ({ username }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <PageLayout>
-        Profile View
-        <p>@{data.name}</p>
+        <div className=" relative h-36 bg-slate-600">
+          <Image
+            src={data.profilePicture}
+            alt={`@${data.name ? data.name + "'s" : ""} profile picture`}
+            width={128}
+            height={128}
+            className="absolute bottom-0 -mb-16 ml-4 rounded-full border-2 border-black bg-black align-bottom"
+          />
+        </div>
+        <div className="mt-16 flex flex-col gap-3 p-4 text-2xl font-bold">
+          <p className="">@{data.name}</p>
+        </div>
+        <div className="w-full border-b border-slate-400" />
       </PageLayout>
     </>
   );
