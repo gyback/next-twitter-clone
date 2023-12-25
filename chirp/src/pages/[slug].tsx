@@ -23,9 +23,7 @@ const ProfileFeed = (props: { userId: string }) => {
   if (!data || data.length === 0) return <div>User has not posted</div>;
   return (
     <section className="flex flex-col">
-      {data.map((fullPost) => (
-        <PostView {...fullPost} />
-      ))}
+      {data.map((fullPost) => PostView(fullPost))}
     </section>
   );
 };
