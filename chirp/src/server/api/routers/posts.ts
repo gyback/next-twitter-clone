@@ -10,12 +10,7 @@ import type { User } from "@clerk/backend";
 import { TRPCError } from "@trpc/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-
-const filterUserForClient = (user: User) => ({
-  id: user.id,
-  name: user.username,
-  profilePicture: user.imageUrl,
-});
+import { filterUserForClient } from "~/utils/filterUserForClient";
 
 const rateLimit = new Ratelimit({
   redis: Redis.fromEnv(),
