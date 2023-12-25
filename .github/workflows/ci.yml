@@ -3,6 +3,8 @@ name: CI
 on:
   pull_request:
     branches: [ master ]
+  push:
+    branches: [ master ]
 
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
