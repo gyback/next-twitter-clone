@@ -1,18 +1,13 @@
 import Head from "next/head";
 
-import { api, type RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
 import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import Image from "next/image";
 import { LoadingPage, LoadingSpinner } from "~/components/Loading.component";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { TRPCClientError } from "@trpc/client";
-import Link from "next/link";
 import PageLayout from "~/components/PageLayout.component";
-
-dayjs.extend(relativeTime);
+import PostView from "~/components/PostView.component";
 
 const CreatePostWizard = () => {
   const [input, setInput] = useState("");
@@ -75,36 +70,6 @@ const CreatePostWizard = () => {
         {isCreatingPost ? <LoadingSpinner /> : "Post"}
       </button>
     </form>
-  );
-};
-
-type PostWithUser = RouterOutputs["posts"]["getAll"][number];
-const PostView = ({ post, author }: PostWithUser) => {
-  return (
-    <div key={post.id} className="flex gap-3 border-b border-slate-400 p-4">
-      <Image
-        src={author.profilePicture}
-        alt={`Profile picture of ${author.name}`}
-        className="h-8 w-8 rounded-full align-bottom"
-        width={56}
-        height={56}
-      />
-      <section className="flex flex-col gap-3 text-slate-300">
-        <div className="flex flex-row gap-1.5">
-          <Link href={`/@${author.name}`}>
-            <span>{`@${author.name}`}</span>
-          </Link>
-
-          <p className="font-thin">
-            {"· "}
-            <Link href={`/post/${post.id}`}>
-              {dayjs(post.createdAt).fromNow()}
-            </Link>
-          </p>
-        </div>
-        <p>{post.content}</p>
-      </section>
-    </div>
   );
 };
 

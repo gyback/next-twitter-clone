@@ -8,10 +8,27 @@ import type { GetStaticProps, InferGetStaticPropsType, NextPage } from "next";
 import { clerkClient } from "@clerk/nextjs";
 import PageLayout from "~/components/PageLayout.component";
 import Image from "next/image";
+import { LoadingPage } from "~/components/Loading.component";
+import PostView from "~/components/PostView.component";
 
 type PageProps = {
   username: string;
 } & InferGetStaticPropsType<typeof getStaticProps>;
+
+const ProfileFeed = (props: { userId: string }) => {
+  const { data, isLoading } = api.posts.getAllByUserId.useQuery({
+    userId: props.userId,
+  });
+  if (isLoading) return <LoadingPage />;
+  if (!data || data.length === 0) return <div>User has not posted</div>;
+  return (
+    <section className="flex flex-col">
+      {data.map((fullPost) => (
+        <PostView {...fullPost} />
+      ))}
+    </section>
+  );
+};
 const ProfilePage: NextPage<PageProps> = ({ username }) => {
   const { data, isLoading } = api.profile.getUserByUsername.useQuery({
     username,
@@ -42,6 +59,7 @@ const ProfilePage: NextPage<PageProps> = ({ username }) => {
           <p className="">@{data.name}</p>
         </div>
         <div className="w-full border-b border-slate-400" />
+        <ProfileFeed userId={data.id} />
       </PageLayout>
     </>
   );
