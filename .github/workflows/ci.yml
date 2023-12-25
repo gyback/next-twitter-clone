@@ -3,10 +3,12 @@ name: CI
 on:
   [push, pull_request]
 
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
 jobs:
     build:
-
+        environment: Production
         defaults:
           run:
             working-directory: ./chirp/
@@ -24,6 +26,4 @@ jobs:
             run: npm run typecheck
 
           - name: Lint
-            env:
-              DATABASE_URL: ${{ secrets.DATABASE_URL }}
             run: npm run lint
